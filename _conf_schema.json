@@ -1,0 +1,13 @@
+{
+    "admin_id": {
+        "description": "管理员ID",
+        "type": "string",
+        "hint": "接收通知的管理员ID"
+    },
+    "max_tokens": {
+        "description": "Token上限",
+        "type": "int", 
+        "hint": "达到此数量将通知管理员",
+        "default": 100000
+    }
+}

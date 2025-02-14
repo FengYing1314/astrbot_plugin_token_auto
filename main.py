@@ -1,18 +1,55 @@
-from astrbot.api.event import filter, AstrMessageEvent, MessageEventResult
+import asyncio
+import json
+from astrbot.api.event import filter, AstrMessageEvent
 from astrbot.api.star import Context, Star, register
 from astrbot.api import logger
+from astrbot.api.event.filter import command, permission_type
+from astrbot.api.permission import PermissionType
 
-@register("helloworld", "Your Name", "一个简单的 Hello World 插件", "1.0.0", "repo url")
-class MyPlugin(Star):
-    def __init__(self, context: Context):
+@register("auto_reset", "YourName", "Token使用监控与重置插件", "1.0.0")
+class AutoResetPlugin(Star):
+    def __init__(self, context: Context, config: dict):
         super().__init__(context)
+        self.config = config
+        self.total_tokens = 0
+        self.admin_id = config.get("admin_id", "")
+        self.max_tokens = config.get("max_tokens", 100000)
+        # 监听LLM响应
+        self.context.event_bus.subscribe("on_llm_response", self.on_llm_response)
+        
+    async def on_llm_response(self, event: AstrMessageEvent, response):
+        """监听LLM响应,统计token使用量"""
+        if response and response.raw_completion:
+            # 获取本次对话使用的token
+            usage = response.raw_completion.get("usage", {})
+            prompt_tokens = usage.get("prompt_tokens", 0)
+            completion_tokens = usage.get("completion_tokens", 0)
+            
+            self.total_tokens += prompt_tokens + completion_tokens
+            
+            # 检查是否超过上限
+            if self.total_tokens >= self.max_tokens:
+                # 构建私聊消息origin
+                admin_origin = f"private_{self.admin_id}"
+                
+                # 发送通知给管理员
+                await self.context.send_message(
+                    admin_origin,
+                    f"Token使用量已达到{self.total_tokens}/{self.max_tokens}。\n"
+                    f"请使用 /reset_tokens 重置计数器。"
+                )
     
-    # 注册指令的装饰器。指令名为 helloworld。注册成功后，发送 `/helloworld` 就会触发这个指令，并回复 `你好, {user_name}!`
-    @filter.command("helloworld")
-    async def helloworld(self, event: AstrMessageEvent):
-        '''这是一个 hello world 指令''' # 这是 handler 的描述，将会被解析方便用户了解插件内容。建议填写。
-        user_name = event.get_sender_name()
-        message_str = event.message_str # 用户发的纯文本消息字符串
-        message_chain = event.get_messages() # 用户所发的消息的消息链 # from astrbot.api.message_components import *
-        logger.info(message_chain)
-        yield event.plain_result(f"Hello, {user_name}, 你发了 {message_str}!") # 发送一条纯文本消息
+    @command("reset_tokens")
+    @permission_type(PermissionType.ADMIN)
+    async def reset_tokens(self, event: AstrMessageEvent):
+        """重置token计数器"""
+        old_count = self.total_tokens
+        self.total_tokens = 0
+        yield event.plain_result(f"Token计数已重置。原计数: {old_count}")
+        
+    @command("check_tokens") 
+    async def check_tokens(self, event: AstrMessageEvent):
+        """查看当前token使用量"""
+        yield event.plain_result(
+            f"当前Token使用量: {self.total_tokens}/{self.max_tokens}"
+        )
