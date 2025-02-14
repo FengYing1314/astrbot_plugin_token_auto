@@ -7,7 +7,7 @@ from astrbot.api.event.filter import command, permission_type, PermissionType
 from astrbot.api.provider import LLMResponse, ProviderRequest
 from astrbot.core.message.components import Plain
 
-@register("auto_reset", "FengYing", "Token使用监控与重置插件", "1.0.0")
+@register("auto_reset", "FengYing", "更加详细的Token使用监控与重置插件", "1.0.0")
 class AutoResetPlugin(Star):
     def __init__(self, context: Context, config: dict):
         super().__init__(context)
