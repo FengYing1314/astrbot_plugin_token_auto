@@ -5,4 +5,4 @@ help: |
   使用 /reset_tokens 重置token计数(仅管理员)
 version: v1.0.0
 author: FengYing
-repo: https://github.com/FengYing1314/auto_reset
+repo: https://github.com/FengYing1314/astrbot_plugin_token_auto
