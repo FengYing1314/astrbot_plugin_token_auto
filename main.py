@@ -7,8 +7,8 @@ from astrbot.api.event.filter import command, permission_type, PermissionType
 from astrbot.api.provider import LLMResponse, ProviderRequest
 from astrbot.core.message.components import Plain
 
-@register("auto_reset", "FengYing", "更加详细的Token使用监控与重置插件", "1.0.0")
-class AutoResetPlugin(Star):
+@register("astrbot_plugin_token_auto", "FengYing", "更加详细的Token使用监控与管理插件", "1.0.0", "https://github.com/FengYing1314/astrbot_plugin_token_auto")
+class TokenAutoPlugin(Star):
     def __init__(self, context: Context, config: dict):
         super().__init__(context)
         self.config = config
