@@ -6,7 +6,6 @@ AstrBot Token使用监控与管理插件，提供以下功能：
 - 支持会话重置时自动重置token计数
 - token使用量达到上限时通知管理员
 - 支持管理员手动重置token计数
-- 使用了ai开发（真爽）
 
 ## 使用方法
 
@@ -26,7 +25,7 @@ FengYing
 感谢 [astrbot_plugin_token_calculator](https://github.com/rinen0721/astrbot_plugin_token_calculator) 项目提供参考
 
 ## 画饼计划 🎯
-
+## 本项目使用了ai工具开发（爽）
 ### 即将推出
 - [ ] 自定义 token 使用量提醒阈值
 - [ ] 多管理员支持
