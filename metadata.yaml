@@ -1,6 +1,8 @@
-name: helloworld # 这是你的插件的唯一识别名。
-desc: 这是 AstrBot 的默认插件，支持关键词回复。 # 插件简短描述
-help: 输入 /keyword 查看关键词回复帮助。 # 插件的帮助信息
-version: v1.3 # 插件版本号。格式：v1.1.1 或者 v1.1
-author: Soulter # 作者
-repo: https://github.com/Soulter/helloworld # 插件的仓库地址
+name: auto_reset
+desc: Token使用监控与重置插件
+help: |
+  使用 /check_tokens 查看当前token使用情况
+  使用 /reset_tokens 重置token计数(仅管理员)
+version: v1.0.0
+author: FengYing
+repo: https://github.com/FengYing1314/auto_reset
