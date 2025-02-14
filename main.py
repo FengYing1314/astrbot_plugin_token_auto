@@ -3,10 +3,9 @@ import json
 from astrbot.api.event import filter, AstrMessageEvent
 from astrbot.api.star import Context, Star, register
 from astrbot.api import logger
-from astrbot.api.event.filter import command, permission_type
-from astrbot.api.permission import PermissionType
+from astrbot.api.event.filter import command, permission_type, PermissionType
 
-@register("auto_reset", "YourName", "Token使用监控与重置插件", "1.0.0")
+@register("auto_reset", "FengYing", "Token使用监控与重置插件", "1.0.0")
 class AutoResetPlugin(Star):
     def __init__(self, context: Context, config: dict):
         super().__init__(context)
