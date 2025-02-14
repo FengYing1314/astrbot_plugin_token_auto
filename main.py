@@ -4,6 +4,7 @@ from astrbot.api.event import filter, AstrMessageEvent
 from astrbot.api.star import Context, Star, register
 from astrbot.api import logger
 from astrbot.api.event.filter import command, permission_type, PermissionType
+from astrbot.api.provider import LLMResponse
 
 @register("auto_reset", "FengYing", "Token使用监控与重置插件", "1.0.0")
 class AutoResetPlugin(Star):
@@ -15,9 +16,9 @@ class AutoResetPlugin(Star):
         self.last_usage = {}  # 每个会话上一次的token使用量
         self.admin_id = config.get("admin_id", "")
         self.max_tokens = config.get("max_tokens", 100000)
-        self.context.event_bus.subscribe("on_llm_response", self.on_llm_response)
         
-    async def on_llm_response(self, event: AstrMessageEvent, response):
+    @filter.on_llm_response()
+    async def on_llm_response(self, event: AstrMessageEvent, response: LLMResponse):
         """监听LLM响应,统计token使用量"""
         if response and response.raw_completion:
             # 获取本次对话使用的token
