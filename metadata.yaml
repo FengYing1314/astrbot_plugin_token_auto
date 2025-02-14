@@ -1,8 +1,10 @@
-name: auto_reset
-desc: Token使用监控与重置插件
+name: astrbot_plugin_token_auto
+desc: 更加详细的Token使用监控与管理插件
 help: |
-  使用 /check_tokens 查看当前token使用情况
-  使用 /reset_tokens 重置token计数(仅管理员)
+  命令列表:
+  /token - 开启/关闭token显示
+  /token_check - 查看当前token使用情况
+  /reset_tokens - 重置所有token计数(仅管理员)
 version: v1.0.0
 author: FengYing
-repo: https://github.com/FengYing1314/auto_reset
+repo: https://github.com/FengYing1314/astrbot_plugin_token_auto
