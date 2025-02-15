@@ -1,10 +1,4 @@
-# 🤖 AstrBot Token自动管理插件
-
-<p align="center">
-  <img src="https://img.shields.io/badge/Version-1.0.0-blue.svg" alt="Version">
-  <img src="https://img.shields.io/badge/License-MIT-green.svg" alt="License">
-  <img src="https://img.shields.io/badge/Author-FengYing-orange.svg" alt="Author">
-</p>
+# AstrBot Token管理插件
 
 ## 📝 功能特性
 
@@ -13,7 +7,6 @@
 - 🔁 支持会话重置时自动重置token计数
 - ⚠️ token使用量达到上限时通知管理员
 - 🛠️ 支持管理员手动重置token计数
-- 🤖 使用AI辅助开发
 
 ## 💡 使用方法
 
@@ -34,9 +27,6 @@
 ## 作者
 FengYing
 
-## 鸣谢
-感谢 [astrbot_plugin_token_calculator](https://github.com/rinen0721/astrbot_plugin_token_calculator) 项目提供参考
-
 ## 🎯 开发计划
 
 ### ✅ 已实现功能
@@ -51,8 +41,10 @@ FengYing
 - [ ] 自定义 Token 计费规则
 - [ ] 群组 Token 配额管理
 - [ ] 用户级别的 Token 使用限制
-- [ ] Web 面板数据可视化
 - [ ] Token 使用异常检测和告警
+
+## 鸣谢
+感谢 [astrbot_plugin_token_calculator](https://github.com/rinen0721/astrbot_plugin_token_calculator) 项目提供参考
 
 # 支持
 
