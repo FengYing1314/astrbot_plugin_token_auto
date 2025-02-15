@@ -8,7 +8,7 @@ from astrbot.api.provider import LLMResponse
 from astrbot.core.message.components import Plain
 from astrbot.core.platform.sources.aiocqhttp.aiocqhttp_message_event import AiocqhttpMessageEvent
 
-@register("token_auto", "FengYing", "Token使用监控与管理插件", "1.0.0")
+@register("token_auto", "FengYing", "Token使用监控与管理插件", "1.1.0")
 class TokenAutoPlugin(Star):
     """Token使用监控与管理插件
     
