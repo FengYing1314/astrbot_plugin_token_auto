@@ -1,4 +1,4 @@
-# AstrBot Token管理插件
+#  AstrBot Token管理插件
 
 ## 📝 功能特性
 
@@ -24,24 +24,24 @@
   - `group` - 群聊消息token使用上限
   - `private` - 私聊消息token使用上限
 
-## 作者
-FengYing
-
-## 🎯 开发计划
+## 🎯 功能规划
 
 ### ✅ 已实现功能
 - [x] 多管理员支持
 - [x] 不同会话类型(群聊/私聊)的token限额设置
-- [x] 会话级别的token统计
-- [x] token使用量预警通知
+- [x] 基础token统计与显示
+- [x] token使用预警通知
 
 ### 未来规划
 - [ ] Token 使用趋势图表生成
 - [ ] 导出 Token 使用记录(CSV/JSON格式)
 - [ ] 自定义 Token 计费规则
 - [ ] 群组 Token 配额管理
-- [ ] 用户级别的 Token 使用限制
-- [ ] Token 使用异常检测和告警
+  - [ ] 用户级别的 Token 使用限制
+  - [ ] Token 使用异常检测和警告
+
+## 作者
+FengYing
 
 ## 鸣谢
 感谢 [astrbot_plugin_token_calculator](https://github.com/rinen0721/astrbot_plugin_token_calculator) 项目提供参考
