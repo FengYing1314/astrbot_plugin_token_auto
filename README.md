@@ -1,5 +1,6 @@
 #  AstrBot Token管理插件
 
+## 目前支持兼容openai格式的llm
 ## 📝 功能特性
 
 - 🔄 自动统计每个会话的token使用量
