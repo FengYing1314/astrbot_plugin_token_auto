@@ -1,13 +1,29 @@
 {
-    "admin_id": {
-        "description": "管理员ID",
-        "type": "string",
-        "hint": "接收通知的管理员ID"
+    "admin_ids": {
+        "description": "管理员ID列表",
+        "type": "list",
+        "hint": "可以接收通知的管理员ID列表",
+        "items": {
+            "type": "string"
+        }
     },
     "max_tokens": {
-        "description": "Token上限",
-        "type": "int", 
-        "hint": "达到此数量将通知管理员",
-        "default": 100000
+        "description": "Token上限设置",
+        "type": "object",
+        "hint": "不同会话类型的token使用上限",
+        "items": {
+            "group": {
+                "description": "群聊Token上限",
+                "type": "int",
+                "hint": "群聊消息的token使用上限",
+                "default": 100000
+            },
+            "private": {
+                "description": "私聊Token上限", 
+                "type": "int",
+                "hint": "私聊消息的token使用上限",
+                "default": 50000
+            }
+        }
     }
 }
