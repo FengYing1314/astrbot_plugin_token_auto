@@ -5,6 +5,6 @@ help: |
   /token - 开启/关闭token显示
   /token_check - 查看当前token使用情况
   /reset_tokens - 重置所有token计数(仅管理员)
-version: v1.0.0
+version: v1.1.0
 author: FengYing
 repo: https://github.com/FengYing1314/astrbot_plugin_token_auto
