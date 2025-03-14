@@ -33,14 +33,6 @@
 - [x] 基础token统计与显示
 - [x] token使用预警通知
 
-### 未来规划
-- [ ] 支持更多格式的llm计算token
-- [ ] Token 使用趋势图表生成
-- [ ] 导出 Token 使用记录(CSV/JSON格式)
-- [ ] 自定义 Token 计费规则
-- [ ] 群组 Token 配额管理
-  - [ ] 用户级别的 Token 使用限制
-  - [ ] Token 使用异常检测和警告
 
 ## 作者
 FengYing
