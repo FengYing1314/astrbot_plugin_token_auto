@@ -1,0 +1,11 @@
+# Python
+__pycache__/
+*.pyc
+
+# 数据文件
+token_counts.json
+token_data.json
+
+# 其他
+.DS_Store
+.env
