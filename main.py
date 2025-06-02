@@ -1,6 +1,13 @@
 import json
 import os
+import time
+import csv
 from typing import Dict, Optional
+from io import StringIO
+try:
+    import matplotlib.pyplot as plt
+except Exception:  # pragma: no cover - matplotlib may not be available
+    plt = None
 from astrbot.api.event import filter, AstrMessageEvent
 from astrbot.api.star import Context, Star, register
 from astrbot.api import logger
@@ -9,7 +16,7 @@ from astrbot.api.provider import LLMResponse
 from astrbot.core.message.components import Plain
 from astrbot.core.platform.sources.aiocqhttp.aiocqhttp_message_event import AiocqhttpMessageEvent
 
-@register("token_auto", "FengYing", "Token使用监控与管理插件", "1.2.0")
+@register("token_auto", "FengYing", "Token使用监控与管理插件", "1.3.0")
 class TokenAutoPlugin(Star):
     """Token使用监控与管理插件
     
@@ -35,6 +42,12 @@ class TokenAutoPlugin(Star):
             "group": config.get("max_tokens", {}).get("group", 100000),
             "private": config.get("max_tokens", {}).get("private", 50000)
         }
+        self.cost_per_token = config.get("cost_per_token", 0.0)
+        self.user_limits = config.get("user_limits", {})
+        self.anomaly_threshold = config.get("anomaly_threshold", 0)
+
+        self.token_history = []  # [(timestamp, tokens)]
+        self.user_token_counts: Dict[str, int] = {}
         
         # token显示控制
         self.show_tokens = False
@@ -62,6 +75,8 @@ class TokenAutoPlugin(Star):
                 self.total_tokens = data.get("total_tokens", 0)
                 self.session_tokens = data.get("session_tokens", {})
                 self.last_usage = data.get("last_usage", {})
+                self.token_history = data.get("token_history", [])
+                self.user_token_counts = data.get("user_token_counts", {})
             except Exception as e:
                 logger.error(f"加载token数据失败: {e}")
 
@@ -72,6 +87,8 @@ class TokenAutoPlugin(Star):
             "total_tokens": self.total_tokens,
             "session_tokens": self.session_tokens,
             "last_usage": self.last_usage,
+            "token_history": self.token_history,
+            "user_token_counts": self.user_token_counts,
         }
         try:
             with open(self.data_file, "w", encoding="utf-8") as f:
@@ -97,14 +114,32 @@ class TokenAutoPlugin(Star):
         self.session_tokens[session_id] = self.session_tokens.get(session_id, 0) + tokens
         self.last_usage[session_id] = tokens
         self.token_counts[session_id] = self.token_counts.get(session_id, 0) + tokens
+
+        self.token_history.append((int(time.time()), tokens))
+        user_id = str(event.get_sender_id())
+        self.user_token_counts[user_id] = self.user_token_counts.get(user_id, 0) + tokens
         self._save_data()
+
+    def _extract_usage(self, resp: LLMResponse) -> Optional[object]:
+        """尝试从多种格式的响应中提取usage信息"""
+        completion = resp.raw_completion
+        if not completion:
+            return None
+        usage = getattr(completion, "usage", None)
+        if usage:
+            return usage
+        if isinstance(completion, dict):
+            return completion.get("usage")
+        return None
 
     async def _format_token_message(self, usage) -> str:
         """格式化token使用信息"""
+        cost = usage.total_tokens * self.cost_per_token
+        cost_msg = f" 费用: {cost:.2f}" if self.cost_per_token else ""
         return (
             f"\n💫 Token消耗: {usage.total_tokens} "
             f"(完成: {usage.completion_tokens}, "
-            f"提示: {usage.prompt_tokens})"
+            f"提示: {usage.prompt_tokens})" + cost_msg
         )
 
     @command("token")
@@ -122,22 +157,31 @@ class TokenAutoPlugin(Star):
     async def on_llm_response(self, event: AstrMessageEvent, resp: LLMResponse):
         """处理LLM响应,更新token统计"""
         try:
-            # 验证token信息是否可用
-            completion = resp.raw_completion
-            if not completion or not hasattr(completion, 'usage') or not completion.usage:
+            usage = self._extract_usage(resp)
+            if not usage or not hasattr(usage, "total_tokens"):
                 return
-            
+
             # 获取会话信息
             session_type, session_id, token_limit = self._get_session_info(event)
-            current_usage = completion.usage.total_tokens
-            
+            current_usage = usage.total_tokens
+
             # 更新计数
             await self._update_token_counts(event, current_usage, session_id)
-            
+
             # 设置显示消息
             if self.show_tokens:
-                self._token_msg = await self._format_token_message(completion.usage)
+                self._token_msg = await self._format_token_message(usage)
                 self._is_llm_resp = True
+
+            # 用户级别限制检查
+            user_id = str(event.get_sender_id())
+            limit = self.user_limits.get(user_id)
+            if limit and self.user_token_counts.get(user_id, 0) >= limit:
+                await self._notify_user_limit(event, limit)
+
+            # 异常使用检测
+            if self.anomaly_threshold and current_usage >= self.anomaly_threshold:
+                await self._notify_admin(event, session_type, session_id, token_limit)
 
             # 检查是否超限并通知
             if self.token_counts[session_id] >= token_limit:
@@ -182,6 +226,13 @@ class TokenAutoPlugin(Star):
             logger.error("所有管理员通知失败")
         except Exception as e:
             logger.error(f"通知管理员失败: {str(e)}")
+
+    async def _notify_user_limit(self, event: AstrMessageEvent, limit: int):
+        """通知用户其Token使用已达到上限"""
+        try:
+            await event.reply(f"⚠️ 你已达到Token使用上限 {limit}")
+        except Exception as e:
+            logger.error(f"通知用户失败: {e}")
 
     @filter.on_decorating_result()
     async def on_decorating_result(self, event: AstrMessageEvent):
@@ -295,3 +346,53 @@ class TokenAutoPlugin(Star):
         result += "\n━━━━━━━━━━━━━━"
             
         yield event.plain_result(result)
+
+    @command("token_chart")
+    async def token_chart(self, event: AstrMessageEvent):
+        """生成Token使用趋势图"""
+        if not plt:
+            yield event.plain_result("⚠️ 未安装matplotlib，无法生成图表")
+            return
+
+        if not self.token_history:
+            yield event.plain_result("暂无记录")
+            return
+
+        times = [t for t, _ in self.token_history]
+        values = [v for _, v in self.token_history]
+
+        plt.figure()
+        plt.plot(times, values)
+        plt.xlabel("Time")
+        plt.ylabel("Tokens")
+        plt.tight_layout()
+
+        img_path = os.path.join(os.path.dirname(self.data_file), "token_chart.png")
+        try:
+            plt.savefig(img_path)
+            yield event.plain_result(f"图表已生成: {img_path}")
+        except Exception as e:
+            logger.error(f"生成图表失败: {e}")
+            yield event.plain_result("生成图表失败")
+        finally:
+            plt.close()
+
+    @command("export_tokens")
+    @permission_type(PermissionType.ADMIN)
+    async def export_tokens(self, event: AstrMessageEvent):
+        """导出Token使用记录"""
+        fmt = event.get_plain_text().split(" ")[-1].lower() if " " in event.get_plain_text() else "json"
+        if fmt not in {"json", "csv"}:
+            yield event.plain_result("格式应为 json 或 csv")
+            return
+
+        if fmt == "json":
+            data = json.dumps(self.token_counts, ensure_ascii=False)
+            yield event.plain_result(f"```json\n{data}\n```")
+        else:
+            output = StringIO()
+            writer = csv.writer(output)
+            writer.writerow(["session", "tokens"])
+            for k, v in self.token_counts.items():
+                writer.writerow([k, v])
+            yield event.plain_result(f"```csv\n{output.getvalue()}\n```")
