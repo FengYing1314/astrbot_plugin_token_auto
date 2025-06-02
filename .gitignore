@@ -8,3 +8,5 @@ __pycache__/
 # Data files (如果你不希望追踪这些JSON文件，取消下面两行的注释)
 token_counts.json
 token_data.json
+token_chart.png
+token_counts.csv
