@@ -19,11 +19,29 @@
                 "default": 100000
             },
             "private": {
-                "description": "私聊Token上限", 
+                "description": "私聊Token上限",
                 "type": "int",
                 "hint": "私聊消息的token使用上限",
                 "default": 50000
             }
         }
+    },
+    "cost_per_token": {
+        "description": "单个Token费用",
+        "type": "float",
+        "hint": "计算消耗费用时每个Token的单价",
+        "default": 0.0
+    },
+    "user_limits": {
+        "description": "用户Token限制",
+        "type": "object",
+        "hint": "指定用户的Token使用上限",
+        "items": {}
+    },
+    "anomaly_threshold": {
+        "description": "单次消息异常阈值",
+        "type": "int",
+        "hint": "单条消息使用Token超过该值时触发警告",
+        "default": 0
     }
 }

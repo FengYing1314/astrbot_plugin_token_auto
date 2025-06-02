@@ -1,5 +1,5 @@
 name: astrbot_plugin_token_auto
-version: v1.2.0
+version: v1.3.0
 author: FengYing
 desc: Token使用监控与管理插件
 repo: https://github.com/FengYing1314/astrbot_plugin_token_auto
@@ -8,6 +8,8 @@ help: |
   普通命令:
   /token - 开启/关闭token显示
   /token_check - 查看当前token使用情况
+  /token_chart - 生成Token趋势图
   管理员命令:
   /reset_tokens - 重置所有token计数
   /token_all - 查看所有会话使用情况
+  /export_tokens [json/csv] - 导出Token记录
