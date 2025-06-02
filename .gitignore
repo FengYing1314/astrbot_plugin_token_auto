@@ -1,0 +1,10 @@
+# IDE specific
+.idea/
+
+# Python specific
+__pycache__/
+*.pyc
+
+# Data files (如果你不希望追踪这些JSON文件，取消下面两行的注释)
+token_counts.json
+token_data.json
