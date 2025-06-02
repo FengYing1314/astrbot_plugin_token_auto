@@ -1,4 +1,5 @@
 import json
+import os
 from typing import Dict, Optional
 from astrbot.api.event import filter, AstrMessageEvent
 from astrbot.api.star import Context, Star, register
@@ -8,7 +9,7 @@ from astrbot.api.provider import LLMResponse
 from astrbot.core.message.components import Plain
 from astrbot.core.platform.sources.aiocqhttp.aiocqhttp_message_event import AiocqhttpMessageEvent
 
-@register("token_auto", "FengYing", "Token使用监控与管理插件", "1.1.0")
+@register("token_auto", "FengYing", "Token使用监控与管理插件", "1.2.0")
 class TokenAutoPlugin(Star):
     """Token使用监控与管理插件
     
@@ -39,13 +40,44 @@ class TokenAutoPlugin(Star):
         self.show_tokens = False
         self._token_msg = ""
         self._is_llm_resp = False
-        
+
+        # 数据持久化文件
+        self.data_file = os.path.join(os.path.dirname(__file__), "token_data.json")
+        self._load_data()
+
         logger.info(
             f"Token监控插件已启动\n"
             f"群聊限制: {self.max_tokens['group']}\n"
             f"私聊限制: {self.max_tokens['private']}\n"
             f"管理员数量: {len(self.admin_ids)}"
         )
+
+    def _load_data(self) -> None:
+        """加载持久化的token数据"""
+        if os.path.exists(self.data_file):
+            try:
+                with open(self.data_file, "r", encoding="utf-8") as f:
+                    data = json.load(f)
+                self.token_counts = data.get("token_counts", {})
+                self.total_tokens = data.get("total_tokens", 0)
+                self.session_tokens = data.get("session_tokens", {})
+                self.last_usage = data.get("last_usage", {})
+            except Exception as e:
+                logger.error(f"加载token数据失败: {e}")
+
+    def _save_data(self) -> None:
+        """保存当前token数据"""
+        data = {
+            "token_counts": self.token_counts,
+            "total_tokens": self.total_tokens,
+            "session_tokens": self.session_tokens,
+            "last_usage": self.last_usage,
+        }
+        try:
+            with open(self.data_file, "w", encoding="utf-8") as f:
+                json.dump(data, f, ensure_ascii=False, indent=2)
+        except Exception as e:
+            logger.error(f"保存token数据失败: {e}")
 
     def _get_session_info(self, event: AstrMessageEvent) -> tuple[str, str, int]:
         """获取会话信息
@@ -65,6 +97,7 @@ class TokenAutoPlugin(Star):
         self.session_tokens[session_id] = self.session_tokens.get(session_id, 0) + tokens
         self.last_usage[session_id] = tokens
         self.token_counts[session_id] = self.token_counts.get(session_id, 0) + tokens
+        self._save_data()
 
     async def _format_token_message(self, usage) -> str:
         """格式化token使用信息"""
@@ -175,6 +208,7 @@ class TokenAutoPlugin(Star):
                 del self.session_tokens[session_id]
                 del self.last_usage[session_id]
                 del self.token_counts[session_id]
+                self._save_data()
 
             # 记录日志
             logger.info(f"重置会话: {session_id} (会话: {old_session}, 计数: {old_count})")

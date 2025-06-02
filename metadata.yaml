@@ -1,5 +1,5 @@
 name: astrbot_plugin_token_auto
-version: v1.1.0
+version: v1.2.0
 author: FengYing
 desc: Token使用监控与管理插件
 repo: https://github.com/FengYing1314/astrbot_plugin_token_auto
